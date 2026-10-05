@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Group Detection Using Fingerprint</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Blood Group Detection Using Fingerprint</h1>
+            <p>Upload your fingerprint image to predict your blood group with ResNet AI</p>
+        </header>
+
+        <main>
+            <div class="instructions">
+                <h2>How to Use This Application</h2>
+                <ul>
+                    <li>Place your finger on a fingerprint scanner or use a high-quality fingerprint image</li>
+                    <li>Ensure the fingerprint image is clear with visible ridges and valleys</li>
+                    <li>Supported formats: PNG, JPG, JPEG (Recommended: 224x224 pixels)</li>
+                    <li>Click "Choose Fingerprint Image" and select your fingerprint file</li>
+                    <li>Click "Predict Blood Group" to analyze your fingerprint</li>
+                    <li>View your predicted blood group along with confidence percentage</li>
+                </ul>
+            </div>
+
+            <div class="upload-section">
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <div class="file-upload-wrapper">
+                        <input type="file" id="fileInput" name="file" accept=".png,.jpg,.jpeg" required>
+                        <label for="fileInput" class="file-upload-label">
+                            <span class="upload-icon">指纹</span>
+                            <span class="upload-text">Choose Fingerprint Image</span>
+                        </label>
+                    </div>
+                    <button type="submit" id="predictBtn" class="predict-btn">Predict Blood Group</button>
+                </form>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing fingerprint with ResNet AI...</p>
+            </div>
+
+            <div class="error-message" id="errorMessage">
+                <p id="errorText"></p>
+            </div>
+
+            <div class="result-section" id="resultSection">
+                <h2>Prediction Result</h2>
+                <div class="result-content">
+                    <div class="uploaded-image">
+                        <img id="uploadedImage" src="" alt="Uploaded Fingerprint">
+                    </div>
+                    <div class="prediction-details">
+                        <div class="blood-group-display">
+                            <span id="predictedBloodGroup"></span>
+                        </div>
+                        <div class="confidence-meter">
+                            <p>Confidence: <span id="confidenceValue"></span>%</p>
+                            <div class="meter">
+                                <div id="confidenceBar" class="meter-fill"></div>
+                            </div>
+                        </div>
+                        <div class="top-predictions">
+                            <h3>Top Predictions</h3>
+                            <ul id="topPredictionsList"></ul>
+                        </div>
+                        <div class="info-message">
+                            <p>Note: This prediction is based on machine learning analysis. For medical purposes, please confirm with a blood test.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Blood Group Detection System &copy; 2025 | Powered by ResNet AI</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

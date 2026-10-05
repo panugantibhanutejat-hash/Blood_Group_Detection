@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Group Detector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <i class="fas fa-dna text-blue-600 text-2xl mr-2"></i>
+                        <span class="font-bold text-xl text-gray-900">BloodGroupAI</span>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="{{ url_for('home') }}" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Home
+                        </a>
+                        <a href="{{ url_for('about') }}" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            About
+                        </a>
+                    </div>
+                </div>
+                <div class="hidden sm:ml-6 sm:flex sm:items-center">
+                    {% if session.logged_in %}
+                        <span class="text-gray-700 mr-4">Welcome, {{ session.username }}!</span>
+                        <a href="{{ url_for('detector') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mr-2">
+                            Detector
+                        </a>
+                        <a href="{{ url_for('logout') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            Logout
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Login
+                        </a>
+                        <a href="{{ url_for('signup') }}" class="ml-4 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Sign up
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="bg-white shadow">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <h1 class="text-3xl font-bold text-gray-900">Fingerprint Blood Group Detector</h1>
+            <p class="mt-1 text-sm text-gray-500">Powered by advanced deep learning algorithms</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="px-4 py-6 sm:px-0">
+            <!-- Algorithm Indicators -->
+            <div class="mb-6">
+                <h2 class="text-lg font-medium text-gray-900 mb-3">Active Algorithms</h2>
+                <div class="flex flex-wrap gap-2">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        <i class="fas fa-brain mr-1"></i>
+                        CNN
+                    </span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        <i class="fas fa-project-diagram mr-1"></i>
+                        ResNet50V2
+                    </span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        <i class="fas fa-layer-group mr-1"></i>
+                        EfficientNetB3
+                    </span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        <i class="fas fa-th-large mr-1"></i>
+                        DenseNet121
+                    </span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        <i class="fas fa-chart-line mr-1"></i>
+                        Ensemble Method
+                    </span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                        <i class="fas fa-sliders-h mr-1"></i>
+                        Confidence Calibration
+                    </span>
+                </div>
+            </div>
+
+            <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Upload Section -->
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900 mb-4">Upload Fingerprint Image</h2>
+                            <div id="uploadSection" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors duration-200">
+                                <i class="fas fa-fingerprint text-gray-400 text-5xl mb-4"></i>
+                                <h3 class="text-lg font-medium text-gray-900 mb-2">Upload Fingerprint Image</h3>
+                                <p class="text-sm text-gray-500 mb-4">PNG, JPG, JPEG up to 10MB</p>
+                                <form id="uploadForm" enctype="multipart/form-data">
+                                    <input type="file" id="fileInput" name="file" accept=".png,.jpg,.jpeg" class="hidden" required>
+                                    <button type="button" id="browseButton" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                        <i class="fas fa-upload mr-2"></i> Browse Files
+                                    </button>
+                                </form>
+                            </div>
+                            
+                            <!-- Recent Detections - temporarily hidden due to model collapse issue -->
+                            <!-- 
+                            {% if detections %}
+                            <div class="mt-8">
+                                <h3 class="text-lg font-medium text-gray-900 mb-3">Recent Detections</h3>
+                                <div class="space-y-3">
+                                    {% for detection in detections %}
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                                <i class="fas fa-dna text-blue-600"></i>
+                                            </div>
+                                            <div class="ml-3">
+                                                <p class="text-sm font-medium text-gray-900">{{ detection.predicted_blood_group }}</p>
+                                                <p class="text-xs text-gray-500">{{ detection.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-sm font-medium text-gray-900">{{ (detection.confidence * 100) | round(2) }}%</p>
+                                            <p class="text-xs text-gray-500">Confidence</p>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            -->
+                        </div>
+
+                        <!-- Result Section -->
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900 mb-4">Detection Result</h2>
+                            <div id="resultSection" class="hidden">
+                                <div class="bg-white rounded-lg shadow-md p-6">
+                                    <div class="flex flex-col items-center">
+                                        <div class="mb-6">
+                                            <img id="uploadedImage" src="" alt="Uploaded fingerprint" class="max-h-64 rounded-lg shadow-md">
+                                        </div>
+                                        
+                                        <div class="w-full">
+                                            <h4 class="text-sm font-medium text-gray-500">Predicted Blood Group</h4>
+                                            <div class="mt-2">
+                                                <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-6 text-center">
+                                                    <span id="predictedBloodGroup" class="text-5xl font-bold text-white"></span>
+                                                </div>
+                                                <div class="mt-6">
+                                                    <div class="flex justify-between mb-1">
+                                                        <span class="text-base font-medium text-gray-700">Confidence Level</span>
+                                                        <span id="confidenceValue" class="text-sm font-medium text-gray-700">0%</span>
+                                                    </div>
+                                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                                        <div id="confidenceBar" class="bg-gradient-to-r from-blue-500 to-purple-600 h-2.5 rounded-full" style="width: 0%"></div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Confidence Explanation -->
+                                                <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+                                                    <div class="flex">
+                                                        <i class="fas fa-info-circle text-blue-400 mt-0.5"></i>
+                                                        <div class="ml-2">
+                                                            <p class="text-xs text-blue-700">
+                                                                <span class="font-medium">Confidence Interpretation:</span> 
+                                                                Values above 80% indicate high certainty, 50-80% moderate certainty, 
+                                                                and below 50% low certainty in the prediction.
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Top 3 Predictions -->
+                                        <div class="w-full mt-8">
+                                            <h4 class="text-sm font-medium text-gray-500">Top 3 Predictions</h4>
+                                            <div class="mt-2 space-y-2">
+                                                <div id="topPredictionsList" class="space-y-2">
+                                                    <!-- Top predictions will be inserted here -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Medical Disclaimer -->
+                                        <div class="mt-8 p-4 bg-yellow-50 rounded-lg border border-yellow-200 w-full">
+                                            <div class="flex">
+                                                <i class="fas fa-exclamation-triangle text-yellow-400 text-xl"></i>
+                                                <div class="ml-3">
+                                                    <h4 class="text-sm font-medium text-yellow-800">Medical Disclaimer</h4>
+                                                    <p class="text-sm text-yellow-700 mt-1">
+                                                        This prediction is based on machine learning analysis. 
+                                                        For medical purposes, please confirm with a laboratory blood test. 
+                                                        Results should not be used for medical decision-making without professional verification.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Action Buttons -->
+                                        <div class="mt-6 flex space-x-3">
+                                            <button id="resetButton" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                <i class="fas fa-redo mr-2"></i> New Detection
+                                            </button>
+                                            <button id="downloadButton" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                <i class="fas fa-download mr-2"></i> Download Report
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Placeholder when no result -->
+                            <div id="placeholderSection" class="bg-gray-50 rounded-lg p-12 text-center">
+                                <i class="fas fa-search text-gray-400 text-4xl mb-4"></i>
+                                <h3 class="text-lg font-medium text-gray-900 mb-2">No Detection Yet</h3>
+                                <p class="text-sm text-gray-500">Upload a fingerprint image to see the blood group prediction</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const uploadSection = document.getElementById('uploadSection');
+        const resultSection = document.getElementById('resultSection');
+        const placeholderSection = document.getElementById('placeholderSection');
+        const fileInput = document.getElementById('fileInput');
+        const browseButton = document.getElementById('browseButton');
+        const uploadForm = document.getElementById('uploadForm');
+        const resetButton = document.getElementById('resetButton');
+        const downloadButton = document.getElementById('downloadButton');
+        const uploadedImage = document.getElementById('uploadedImage');
+        const predictedBloodGroup = document.getElementById('predictedBloodGroup');
+        const confidenceValue = document.getElementById('confidenceValue');
+        const confidenceBar = document.getElementById('confidenceBar');
+        const topPredictionsList = document.getElementById('topPredictionsList');
+
+        // Event Listeners
+        browseButton.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', handleFileSelect);
+
+        resetButton.addEventListener('click', () => {
+            // Reset form and show upload section
+            uploadForm.reset();
+            resultSection.classList.add('hidden');
+            placeholderSection.classList.remove('hidden');
+            
+            // Clear previous results
+            predictedBloodGroup.textContent = '';
+            confidenceValue.textContent = '0%';
+            confidenceBar.style.width = '0%';
+            uploadedImage.src = '';
+            topPredictionsList.innerHTML = '';
+        });
+
+        downloadButton.addEventListener('click', () => {
+            alert('Report download functionality would be implemented in a production environment.');
+        });
+
+        // Handle file selection
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // Hide placeholder and show result section
+                placeholderSection.classList.add('hidden');
+                resultSection.classList.remove('hidden');
+                
+                // Hide the main content and show loading indicator
+                const resultContent = document.querySelector('#resultSection .bg-white');
+                if (resultContent) {
+                    resultContent.classList.add('hidden');
+                }
+                
+                // Show loading indicator
+                const loadingDiv = document.createElement('div');
+                loadingDiv.id = 'loadingIndicator';
+                loadingDiv.className = 'flex flex-col items-center justify-center p-12';
+                loadingDiv.innerHTML = `
+                    <i class="fas fa-spinner fa-spin text-4xl text-blue-500 mb-4"></i>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">Analyzing Fingerprint</h3>
+                    <p class="text-sm text-gray-500">Using CNN, ResNet, and ensemble methods...</p>
+                `;
+                
+                // Add loading indicator to result section
+                const resultContainer = document.querySelector('#resultSection');
+                if (resultContainer) {
+                    resultContainer.appendChild(loadingDiv);
+                }
+                
+                // Create FormData object
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                // Send request to server
+                fetch('/predict', {
+                    method: 'POST',
+                    body: formData,
+                    // Add credentials to include cookies/session
+                    credentials: 'same-origin'
+                })
+                .then(response => {
+                    console.log('Raw response:', response);
+                    console.log('Response status:', response.status);
+                    console.log('Response ok?', response.ok);
+                    console.log('Response headers:', [...response.headers.entries()]);
+                    
+                    // Check if response is OK
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Parsed JSON data:', data);
+                    // Remove loading indicator
+                    const loadingIndicator = document.getElementById('loadingIndicator');
+                    if (loadingIndicator) {
+                        loadingIndicator.remove();
+                    }
+                    
+                    // Show the main content again
+                    const resultContent = document.querySelector('#resultSection .bg-white');
+                    if (resultContent) {
+                        resultContent.classList.remove('hidden');
+                    }
+                    
+                    if (data.success) {
+                        displayResults(data);
+                    } else {
+                        alert('Error: ' + (data.error || 'Unknown error occurred'));
+                        resetButton.click(); // Reset to upload screen
+                    }
+                })
+                .catch(error => {
+                    console.error('Full error details:', error);
+                    console.error('Error name:', error.name);
+                    console.error('Error message:', error.message);
+                    
+                    // Remove loading indicator
+                    const loadingIndicator = document.getElementById('loadingIndicator');
+                    if (loadingIndicator) {
+                        loadingIndicator.remove();
+                    }
+                    
+                    // Show the main content again
+                    const resultContent = document.querySelector('#resultSection .bg-white');
+                    if (resultContent) {
+                        resultContent.classList.remove('hidden');
+                    }
+                    
+                    alert('Network error occurred during prediction. Please try again. Error: ' + error.message);
+                    resetButton.click(); // Reset to upload screen
+                });
+            }
+        }
+
+        // Function to display results
+        function displayResults(data) {
+            console.log('Displaying results:', data); // Debug log
+            
+            // Ensure result section is visible
+            document.getElementById('placeholderSection').classList.add('hidden');
+            document.getElementById('resultSection').classList.remove('hidden');
+            
+            // Set image source with error handling
+            if (data.image_url) {
+                const uploadedImage = document.getElementById('uploadedImage');
+                uploadedImage.src = data.image_url;
+                uploadedImage.alt = "Uploaded fingerprint";
+                uploadedImage.onerror = function() {
+                    this.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect width="200" height="200" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-family="Arial" font-size="14"%3EImage not available%3C/text%3E%3C/svg%3E';
+                };
+            }
+            
+            // Set predicted blood group
+            const predictedBloodGroup = document.getElementById('predictedBloodGroup');
+            if (data.prediction) {
+                predictedBloodGroup.textContent = data.prediction;
+            } else {
+                predictedBloodGroup.textContent = 'N/A';
+            }
+            
+            // Set confidence value
+            const confidenceValue = document.getElementById('confidenceValue');
+            const confidenceBar = document.getElementById('confidenceBar');
+            if (data.confidence !== undefined && data.confidence !== null) {
+                const confidencePercent = Math.max(0, Math.min(100, (data.confidence * 100))).toFixed(2);
+                confidenceValue.textContent = confidencePercent + '%';
+                
+                // Set confidence bar width with animation
+                confidenceBar.style.width = '0%';
+                setTimeout(() => {
+                    confidenceBar.style.width = `${confidencePercent}%`;
+                }, 100);
+            } else {
+                confidenceValue.textContent = '0%';
+                confidenceBar.style.width = '0%';
+            }
+            
+            // Display top 3 predictions
+            const topPredictionsList = document.getElementById('topPredictionsList');
+            if (topPredictionsList && data.top_3_predictions && Array.isArray(data.top_3_predictions)) {
+                topPredictionsList.innerHTML = '';
+                
+                data.top_3_predictions.forEach((prediction, index) => {
+                    if (prediction && prediction.blood_group) {
+                        const predictionElement = document.createElement('div');
+                        predictionElement.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors';
+                        
+                        const percentage = Math.max(0, Math.min(100, (prediction.confidence * 100))).toFixed(2);
+                        
+                        // Color code based on rank
+                        let bgColor = 'bg-blue-100 text-blue-800';
+                        if (index === 0) bgColor = 'bg-green-100 text-green-800';
+                        else if (index === 1) bgColor = 'bg-blue-100 text-blue-800';
+                        else bgColor = 'bg-gray-100 text-gray-800';
+                        
+                        predictionElement.innerHTML = `
+                            <div class="flex items-center">
+                                <span class="flex-shrink-0 w-8 h-8 rounded-full ${bgColor} text-xs font-bold flex items-center justify-center mr-3">
+                                    ${index + 1}
+                                </span>
+                                <span class="font-semibold text-gray-900 text-lg">${prediction.blood_group}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-sm font-medium text-gray-700 mr-2">${percentage}%</span>
+                                <div class="w-16 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full" style="width: ${percentage}%"></div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        topPredictionsList.appendChild(predictionElement);
+                    }
+                });
+            }
+            
+            // Store data for report generation
+            window.detectionData = data;
+            
+            // Scroll to results smoothly
+            setTimeout(() => {
+                document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+        
+        // Function to generate and download report
+        function downloadReport() {
+            if (!window.detectionData) {
+                alert('No detection data available for report generation.');
+                return;
+            }
+            
+            const data = window.detectionData;
+            
+            // Show loading indicator
+            const downloadButton = document.getElementById('downloadButton');
+            const originalText = downloadButton.innerHTML;
+            downloadButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Generating Report...';
+            downloadButton.disabled = true;
+            
+            // Send request to generate PDF report
+            fetch('/download_report', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success && result.download_url) {
+                    // Create temporary link and trigger download
+                    const link = document.createElement('a');
+                    link.href = result.download_url;
+                    link.download = `blood_group_report_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.pdf`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } else {
+                    alert('Failed to generate report: ' + (result.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error generating report:', error);
+                alert('Error generating report. Please try again.');
+            })
+            .finally(() => {
+                // Restore button
+                downloadButton.innerHTML = originalText;
+                downloadButton.disabled = false;
+            });
+        }
+        
+        // Add event listener to download button
+        document.getElementById('downloadButton').addEventListener('click', downloadReport);
+    </script>
+</body>
+</html>
